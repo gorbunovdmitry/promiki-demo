@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
-<head>
-<meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<head><meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <meta name="theme-color" content="#9fd8ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -225,6 +225,31 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#9fd8f
 .hnav .tap{font-size:11.5px;color:#9ca3af;font-weight:600}
 
 .side{top:calc(env(safe-area-inset-top,0px) + 4px)!important}
+
+/* игровые кнопки: зелёные с бортиком, без пульса и жёлтых плашек */
+:root{--g1:#5fd14a;--g2:#36a828;--glip:#23801a;--gtext:#fff}
+.main,.btn{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 100%)!important;
+ box-shadow:inset 0 2px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.08),0 5px 0 var(--glip),0 9px 14px rgba(20,70,10,.28)!important;
+ color:var(--gtext);text-shadow:0 1.5px 0 rgba(20,80,10,.55);letter-spacing:.1px;border:2px solid #2a8f1e!important}
+.main{border-radius:20px!important;height:60px;font-size:17px;justify-content:space-between;padding:0 10px 0 20px;animation:none}
+.main::before,.btn::before{content:"";position:absolute;left:8px;right:8px;top:4px;height:40%;border-radius:14px 14px 40px 40px;background:linear-gradient(rgba(255,255,255,.22),rgba(255,255,255,0));pointer-events:none}
+.main::after{content:"";position:absolute;top:0;bottom:0;width:40px;left:-60px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:glint 4.5s ease-in-out infinite 1.5s;pointer-events:none;border:0;border-radius:0}
+@keyframes glint{0%,70%{left:-60px}100%{left:110%}}
+.main:active,.btn:active{transform:translateY(3px);box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 2px 0 var(--glip)!important}
+.main .rw{background:rgba(10,60,5,.22)!important;box-shadow:inset 0 1px 2px rgba(0,0,0,.18);border-radius:14px;padding:5px 12px 5px 6px;font-size:17px;font-weight:900;gap:5px;text-shadow:0 1.5px 0 rgba(20,80,10,.55)}
+.main .rw img{height:26px!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.btn{border-radius:16px!important;margin-top:4px}
+.btn:disabled{background:#d6dbe1!important;border-color:#c5ccd4!important;box-shadow:0 4px 0 #b4bcc6!important;text-shadow:none;color:#fff;opacity:1}
+.btn:disabled::before{display:none}
+.go{background:linear-gradient(var(--g1),var(--g2));box-shadow:inset 0 1.5px 0 rgba(255,255,255,.4),0 3px 0 var(--glip);text-shadow:0 1px 0 rgba(20,80,10,.5)}
+.go.off{background:#eef0f3;box-shadow:0 3px 0 #d5d9df;text-shadow:none}
+.reward{background:none!important;padding:0!important;margin:16px 0 14px!important;gap:10px;font-size:14px;line-height:1.35;color:var(--muted)}
+.reward b{color:var(--ink)}
+.reward img{height:26px!important;flex:none}
+@media (max-width:360px){.main{font-size:15px;padding:0 8px 0 14px}.main .rw{font-size:15px;padding:4px 9px 4px 5px}.main .rw img{height:22px!important}}
+.see{background:linear-gradient(var(--g1),var(--g2))!important;border:1.5px solid #2a8f1e!important;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.4),0 3px 0 var(--glip)!important;text-shadow:0 1px 0 rgba(20,80,10,.5)}
+.see:active{transform:translateY(2px);box-shadow:0 1px 0 var(--glip)!important}
+@media (max-width:360px){.main{font-size:14.5px;white-space:nowrap}}
 </style>
 </head>
 <body>
@@ -271,7 +296,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#9fd8f
 
     <div class="bottom">
       <button class="rbtn" onclick="openCatalog('bar')" style="width:62px;height:62px;border-radius:22px"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M6 30l11-11" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/><path d="M14 9l7-5 9 9-5 7z" fill="#94a3b8"/><path d="M14 9l11 11" stroke="#64748b" stroke-width="2"/></svg></button>
-      <button class="main pulse" id="mainBtn" onclick="openForm('main_button')">Принести промокод <span class="rw">+200 <svg width="16" height="16" viewBox="-12 -12 24 24" class="coin"></svg></span></button>
+      <button class="main" id="mainBtn" onclick="openForm('main_button')"><span class="lbl">Принести промокод</span><span class="rw"><svg width="22" height="22" viewBox="-12 -12 24 24" class="coin"></svg>200</span></button>
     </div>
 
     <button class="codesbtn" onclick="openCodes('map_button')"><span id="tkIco"></span><span class="t">Промокоды<small>коды брендов · смотреть</small></span><span class="ar">›</span></button>
