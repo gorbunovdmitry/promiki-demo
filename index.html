@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#9fd8ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Страна промиков</title>
 <style>
 :root{--bg:#eef0f3;--ink:#1b1d22;--muted:#6b7280;--accent:#ef3124;--gold:#ffb703;--card:#fff}
@@ -181,6 +183,26 @@ input:focus{outline:none;border-color:#7c3aed}
 .reveal .big{font:900 28px ui-monospace,Menlo,monospace;letter-spacing:3px;border:2px dashed #f59f00;background:#fff8e6;border-radius:16px;padding:16px;margin:12px 0}
 .vote{display:flex;gap:8px;margin-top:12px}.vote button{flex:1;border:0;border-radius:14px;padding:12px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
 .vote .y{background:#e8f8ee;color:#15803d}.vote .n{background:#fdecec;color:#b91c1c}
+
+/* ===== прототип: без рамки и техполей, адаптив ===== */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#9fd8ff}
+.wrap{display:block;padding:0;height:100%}
+.phone{width:100%!important;max-width:none;height:100vh;height:100dvh;border-radius:0;box-shadow:none;background:transparent}
+.status,.panel,#s-home{display:none!important}
+.hud{top:calc(env(safe-area-inset-top,0px) + 10px);left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px))}
+.codesbtn{top:calc(env(safe-area-inset-top,0px) + 66px);left:max(12px,env(safe-area-inset-left,0px))}
+.side{top:calc(env(safe-area-inset-top,0px) + 66px);right:max(12px,env(safe-area-inset-right,0px))}
+.toast{top:calc(env(safe-area-inset-top,0px) + 70px)}
+.bottom{left:50%;right:auto;transform:translateX(-50%);width:min(calc(100% - 24px),560px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px)}
+.hint{left:50%;right:auto;transform:translateX(-50%);width:min(calc(100% - 24px),560px);bottom:calc(env(safe-area-inset-bottom,0px) + 92px)}
+.sheet{left:50%;right:auto;width:100%;max-width:560px;transform:translate(-50%,105%);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 22px)}
+.sheet.on{transform:translate(-50%,0)}
+.page{padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px,calc((100% - 600px)/2)) calc(env(safe-area-inset-bottom,0px) + 28px)}
+.cats{margin-left:0;margin-right:0;padding:0}
+.card{max-width:420px}
+@media (max-width:360px){.codesbtn .t{font-size:16px}.codesbtn small{display:none}.codesbtn{padding:8px 10px}.main{font-size:15px}.rbtn{width:56px;height:56px}.side{gap:8px}.hint .bub{font-size:12.5px}}
+@media (max-height:640px){.hint{display:none!important}}
+@media (min-width:700px){.codesbtn .t{font-size:21px}.rbtn{width:72px;height:72px}.hpill{font-size:17px}}
 </style>
 </head>
 <body>
@@ -189,7 +211,7 @@ input:focus{outline:none;border-color:#7c3aed}
   <div class="status"><span>9:41</span><span>●●● ▮</span></div>
 
   <!-- главная приложения с баннером -->
-  <section class="screen on" id="s-home">
+  <section class="screen" id="s-home">
     <div class="home">
       <div class="hd"><div class="avatar"></div><span class="muted small">Главная приложения (макет)</span><span>🔔</span></div>
       <div class="bal"><div class="muted small">Счёт</div><b>••• ₽</b><div class="ph" style="width:60%"></div></div>
@@ -203,7 +225,7 @@ input:focus{outline:none;border-color:#7c3aed}
   </section>
 
   <!-- игра -->
-  <section class="screen" id="s-game">
+  <section class="screen on" id="s-game">
     <div class="viewport" id="vp"><svg id="map"></svg></div>
 
     <div class="hud">
@@ -244,7 +266,7 @@ input:focus{outline:none;border-color:#7c3aed}
         <p>Мы делаем игру прямо сейчас. Ваш промокод сохранили и проверим — спасибо, что помогаете наполнить город!</p>
         <div class="kv"><b id="dBrand"></b> · <span id="dCode"></span></div>
         <button class="btn" onclick="again()">Принести ещё промокод</button>
-        <button class="btn2" onclick="go2home('done_close')">Вернуться в приложение</button>
+        <button class="btn2" onclick="go2home('done_close')">Вернуться в город</button>
       </div>
     </div>
   </section>
@@ -284,6 +306,7 @@ function track(key,params={}){
   const name=`${P}_${ev}_${V}`, log=document.getElementById('log');
   log.textContent+=`${new Date().toLocaleTimeString('ru-RU')}  ${name}${Object.keys(params).length?' '+JSON.stringify(params):''}\n`;
   log.scrollTop=log.scrollHeight;
+  (window.dataLayer=window.dataLayer||[]).push({event:name,...params});
   // в бою: gtag('event',name,params); ym(96171108,'reachGoal',name,params);
 }
 
@@ -452,13 +475,16 @@ function startWalkers(){
 let tx=0,ty=0,drag=null,moved=false,panned=false;
 function centerMap(){
   const vp=document.getElementById('vp'), [cx,cy]=Pt(5.5,5.5);
-  tx=vp.clientWidth/2-cx*ZM; ty=vp.clientHeight/2-cy*ZM-10; apply();
+  const vw=vp.clientWidth, vh=vp.clientHeight; ZM=Math.max(.6,Math.min(1.5,vw/480,vh/860));
+  tx=vw/2-cx*ZM; ty=vh/2-cy*ZM-10; apply();
 }
-const ZM=.78;
+let ZM=.78;
 function apply(){
   const vp=document.getElementById('vp'), m=document.getElementById('map');
   const W=+m.getAttribute('width')*ZM, H=+m.getAttribute('height')*ZM;
-  tx=Math.min(40,Math.max(vp.clientWidth-W-40,tx)); ty=Math.min(90,Math.max(vp.clientHeight-H-90,ty));
+  const vw=vp.clientWidth, vh=vp.clientHeight;
+  tx = W+80<=vw ? (vw-W)/2 : Math.min(40,Math.max(vw-W-40,tx));
+  ty = H+180<=vh ? (vh-H)/2 : Math.min(90,Math.max(vh-H-90,ty));
   m.style.transformOrigin='0 0'; m.style.transform=`translate(${tx}px,${ty}px) scale(${ZM})`;
 }
 function initPan(){
@@ -572,10 +598,10 @@ function again(){document.getElementById('done').classList.remove('on');openForm
 /* ===================== навигация ===================== */
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+id))}
 function openGame(){
-  track('banner'); show('game'); track('game'); centerMap();
+  show('game'); track('game'); centerMap();
   setHint('Привет! Я Промик. Принесите <b>рабочий промокод</b> — получите 200 монет и постройте свой первый дом.');
 }
-function go2home(){closeSheet();closeCodes();document.getElementById('done').classList.remove('on');show('home')}
+function go2home(){closeSheet();closeCodes();document.getElementById('done').classList.remove('on');centerMap()}
 function resetAll(){hit.clear();submits=0;panned=false;document.getElementById('log').textContent='';renderFunnel();go2home()}
 
 
@@ -829,6 +855,8 @@ document.getElementById('bannerArt').outerHTML=`<div style="position:relative;wi
 document.getElementById('doneArt').outerHTML=`<div style="position:relative;height:120px;width:200px;margin:0 auto"><img src="${IMG.mushroom_house_yellow}" style="position:absolute;right:6px;bottom:0;height:86px"><img src="${IMG.promik_guide}" style="position:absolute;left:22px;bottom:0;height:116px"></div>`;
 
 
+window.addEventListener('resize',()=>centerMap());
+if(!location.hash.slice(1)) openGame();
 // демо-прогон для снимков: #game #brand #catalog #form #done
 (function(){
   const h=location.hash.slice(1); if(!h||h==='home') return;
