@@ -925,13 +925,28 @@ function onTilesA(n,i0,j0,k){
   const det3=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
   const D=det3(A), col=(c)=>A.map((r,i)=>r.map((x,j)=>j===c?Y[i]:x));
   const bb=det3(col(0))/D, d=det3(col(1))/D, f=det3(col(2))/D;
-  // строго внутри клеток: контур подложки (с бортиком) вписываем в ромб k×k
-  const [ccx,ccy]=Pt(i0+k/2,j0+k/2), ha=k*TW/2, hb=k*TH/2;
-  const hp=(HULL[n]||[]).map(([x,y])=>[a*x+e,bb*x+d*y+f]);
-  let best={fm:1e9,t:0};
-  for(let t=0;t<=40;t+=1){let fm=0;for(const [x,y] of hp)fm=Math.max(fm,Math.abs(x-ccx)/ha+Math.abs(y-t-ccy)/hb);if(fm<best.fm)best={fm,t};}
-  const sc=hp.length?Math.min(1,.96/best.fm):1, tt=hp.length?best.t:0;
-  const M=[sc*a,sc*bb,0,sc*d,ccx+sc*(e-ccx),ccy+sc*(f-tt-ccy)], ap=(x,y)=>[M[0]*x+M[4],M[1]*x+M[3]*y+M[5]];
+  // подложка (с бортиком) вписывается в клетку как можно плотнее, с одинаковым запасом:
+  // перебираем лёгкое сплющивание r, наклон sh и сдвиг t, берём максимальный масштаб, при котором контур внутри
+  const [ccx,ccy]=Pt(i0+k/2,j0+k/2), ha=k*TW/2, hb=k*TH/2, LIM=.97, Hh=HULL[n];
+  let M=[a,bb,0,d,e,f];
+  if(Hh&&Hh.length){
+    const xs=Hh.map(p=>p[0]), ys=Hh.map(p=>p[1]);
+    const xc=(Math.min(...xs)+Math.max(...xs))/2, yc=(Math.min(...ys)+Math.max(...ys))/2, br=bb/a, r0=d/a;
+    const FK=(window.__FIT=window.__FIT||{}); let best=FK[n]?{s:FK[n].s*k,r:FK[n].r,sh:FK[n].sh,t:FK[n].t*k}:null;
+    if(!best){ best={s:0};
+    for(let r=r0*.8;r<=r0*1.08;r+=r0*.02)for(let sh=-.08;sh<=.0801;sh+=.02){
+      const P=Hh.map(([x,y])=>[x-xc,(br+sh)*(x-xc)+r*(y-yc)]);
+      for(let t=-.4*hb;t<=.4*hb;t+=hb*.02){
+        let lo=0,hi=1.5;
+        for(let it=0;it<18;it++){const m=(lo+hi)/2;let ok=true;for(const [px,py] of P){if(Math.abs(m*px)/ha+Math.abs(m*py+t)/hb>LIM){ok=false;break}}if(ok)lo=m;else hi=m;}
+        if(lo>best.s)best={s:lo,r,sh,t};
+      }
+    }
+    FK[n]={s:best.s/k,r:best.r,sh:best.sh,t:best.t/k}; }
+    const S=best.s, B2=S*(br+best.sh), D2=S*best.r;
+    M=[S,B2,0,D2,ccx-S*xc,ccy+best.t-B2*xc-D2*yc];
+  }
+  const ap=(x,y)=>[M[0]*x+M[4],M[1]*x+M[3]*y+M[5]];
   const tr=`matrix(${M.map(x=>x.toFixed(5)).join(' ')})`;
   return {M,iw,ih,ap,open:`<g transform="${tr}"><image href="${IMG[n]}" x="0" y="0" width="${iw}" height="${ih}"/>`,svg:`<g transform="${tr}"><image href="${IMG[n]}" x="0" y="0" width="${iw}" height="${ih}"/></g>`};
 }
