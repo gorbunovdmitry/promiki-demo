@@ -258,7 +258,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#9fd8f
 .lvl{display:none!important}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VNG605KE2R"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-VNG605KE2R');</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-VNG605KE2R',{variant:'var1',prototype:'game-3brands',page_title:'Страна промиков · var1 · игра, 3 бренда'});</script>
 </head>
 <body>
 <div class="wrap">
@@ -330,7 +330,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#9fd8f
 
 <aside class="panel">
   <h4>Что считаем</h4>
-  <div class="muted small">Клики в макете подсвечивают шаги. События — <code>8xxx_…_var1</code>.</div>
+  <div class="muted small">Клики в макете подсвечивают шаги. События — <code>p8418_…_var1</code>.</div>
   <div id="funnel"></div>
   <div class="log" id="log"></div>
   <button class="reset" onclick="resetAll()">Сбросить</button>
@@ -346,7 +346,7 @@ const PATCH={"bakery": {"l": [0.0026455026455026454, 0.7261904761904762], "r": [
 </script>
 <script>
 /* ===================== аналитика ===================== */
-const P='8xxx', V='var1';
+const P='8418', V='var1';
 const PROTO=(f=>({index:'game-3brands','':'game-3brands'})[f]||f)((location.pathname.split('/').pop()||'').replace(/\.html$/,''));
 const STEPS=[
   ['Вход',[['banner','Клик по баннеру','click_banner'],['game','Открыли игру — «посмотрели»','page_view_game']]],
@@ -365,9 +365,9 @@ function track(key,params={}){
   log.textContent+=`${new Date().toLocaleTimeString('ru-RU')}  ${name}${Object.keys(params).length?' '+JSON.stringify(params):''}\n`;
   log.scrollTop=log.scrollHeight;
   (window.promikiLog=window.promikiLog||[]).push({event:name,...params});
-  // GA4: имя не может начинаться с цифры, поэтому promiki_<событие>, вариант и прототип — параметрами
+  // GA4: имя события должно начинаться с буквы, поэтому p8418_<событие>_varN; вариант и прототип ещё и параметрами
   const ga={}; for(const [k,v] of Object.entries(params)) ga[k]=typeof v==='string'?v.slice(0,100):v;
-  if(window.gtag) gtag('event','promiki_'+ev,{...ga,prototype:PROTO,variant:V});
+  if(window.gtag) gtag('event','p'+name,{...ga,prototype:PROTO,variant:V});
 }
 
 /* ===================== графика ===================== */
