@@ -651,6 +651,8 @@ uniform ${i} ${r} u_${a};
     };
 
 }));</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VNG605KE2R"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-VNG605KE2R');</script>
 </head>
 <body>
 <div class="wrap">
@@ -739,6 +741,7 @@ const PATCH={"bakery": {"l": [0.0026455026455026454, 0.7261904761904762], "r": [
 <script>
 /* ===================== аналитика ===================== */
 const P='8xxx', V='var1';
+const PROTO=(f=>({index:'game-3brands','':'game-3brands'})[f]||f)((location.pathname.split('/').pop()||'').replace(/\.html$/,''));
 const STEPS=[
   ['Вход',[['banner','Клик по баннеру','click_banner'],['game','Открыли игру — «посмотрели»','page_view_game']]],
   ['Интерес к игре',[['pan','Двигали карту','map_pan'],['place','Тап по магазину на карте','tap_place'],['digitalbrand','Тап по цифровому сервису','tap_digital'],['hint','Листали подсказки','hint_step'],['brand','Тап по зданию бренда','tap_brand'],['catalog','Открыли каталог зданий','open_catalog'],['build','Пытались построить','click_build'],['tasks','Открыли задания','open_tasks'],['codes','Открыли промокоды','open_codes'],['search','Искали бренд','search_brand'],['shop','Открыли лавку','open_shop'],['shopbuy','Хотели купить эксклюзив','click_shop_buy']]],
@@ -755,8 +758,10 @@ function track(key,params={}){
   const name=`${P}_${ev}_${V}`, log=document.getElementById('log');
   log.textContent+=`${new Date().toLocaleTimeString('ru-RU')}  ${name}${Object.keys(params).length?' '+JSON.stringify(params):''}\n`;
   log.scrollTop=log.scrollHeight;
-  (window.dataLayer=window.dataLayer||[]).push({event:name,...params});
-  // в бою: gtag('event',name,params); ym(96171108,'reachGoal',name,params);
+  (window.promikiLog=window.promikiLog||[]).push({event:name,...params});
+  // GA4: имя не может начинаться с цифры, поэтому promiki_<событие>, вариант и прототип — параметрами
+  const ga={}; for(const [k,v] of Object.entries(params)) ga[k]=typeof v==='string'?v.slice(0,100):v;
+  if(window.gtag) gtag('event','promiki_'+ev,{...ga,prototype:PROTO,variant:V});
 }
 
 /* ===================== графика ===================== */
@@ -1019,7 +1024,7 @@ const FORM_BRANDS=['Пятёрочка','Золотое Яблоко','Вкус�
 let brand='',formSource='',submits=0;
 function openForm(src,pre){
   formSource=src; brand=pre||'';
-  track('target',{source:src});
+  track('target',{source:src,...(pre?{brand:pre}:{})});
   openSheet(`<h2>Принести промокод</h2><p class="sub">Код, который сработал у вас. Когда его подтвердят другие жители — получите монеты.</p>
   <label>Бренд</label><div class="chips">${FORM_BRANDS.map(b=>`<button class="bchip ${b===brand?'sel':''}" onclick="pick(this)">${b}${BRANDS_IN_CITY.some(x=>x.name===b)?'<span class="in">в городе</span>':''}</button>`).join('')}</div>
   <input id="brandOther" placeholder="Другой бренд" style="margin-top:10px" oninput="pickOther()">
@@ -1046,13 +1051,20 @@ function check(code){
   return null;
 }
 function validate(){const el=document.getElementById('code');if(!el)return;const e=check(el.value.trim());document.getElementById('err').textContent=e||'';document.getElementById('submit').disabled=!(brand.length>=2&&e===null)}
+/* ===================== сохранение кода в Google Таблицу ===================== */
+const SHEET_URL=''; // адрес веб-приложения Apps Script (…/exec), см. sheet-apps-script.gs
+const VISIT=Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const VARIANT=(f=>({index:'game-3brands'})[f]||f)((location.pathname.split('/').pop()||'index.html').replace(/\.html$/,''));
+function saveToSheet(d){ if(!SHEET_URL) return;
+  try{ fetch(SHEET_URL,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...d,variant:VARIANT,visit:VISIT})}).catch(()=>{}) }catch(e){} }
 function submitCode(){
   const code=document.getElementById('code').value.trim();
   if(!document.querySelector('.bchip.sel')) track('brandin',{brand,from:'free_text'});
   submits++;
   track(submits===1?'submit':'again',{brand,code_len:code.length,has_condition:!!document.getElementById('cond').value.trim(),source:formSource,n:submits});
+  saveToSheet({brand,brand_input:document.querySelector('.bchip.sel')?'chip':'text',code,condition:document.getElementById('cond').value.trim(),source:formSource,n:submits});
   closeSheet(); document.getElementById('dBrand').textContent=brand; document.getElementById('dCode').textContent=code.toUpperCase();
-  document.getElementById('done').classList.add('on'); track('done');
+  document.getElementById('done').classList.add('on'); track('done',{brand});
 }
 function again(){document.getElementById('done').classList.remove('on');openForm('done_again')}
 
